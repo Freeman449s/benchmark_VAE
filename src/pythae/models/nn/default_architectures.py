@@ -10,6 +10,10 @@ from ..base.base_utils import ModelOutput
 
 
 class Encoder_AE_MLP(BaseEncoder):
+    """
+    默认的MLP形式的AE Encoder，具有双线性层，神经元个数512->latent_dim
+    """
+
     def __init__(self, args: dict):
         BaseEncoder.__init__(self)
         self.input_dim = args.input_dim
@@ -20,7 +24,7 @@ class Encoder_AE_MLP(BaseEncoder):
         layers.append(nn.Sequential(nn.Linear(np.prod(args.input_dim), 512), nn.ReLU()))
 
         self.layers = layers
-        self.depth = len(layers)
+        self.depth = len(layers)  # 1
 
         self.embedding = nn.Linear(512, self.latent_dim)
 
@@ -51,7 +55,7 @@ class Encoder_AE_MLP(BaseEncoder):
 
             if output_layer_levels is not None:
                 if i + 1 in output_layer_levels:
-                    output[f"embedding_layer_{i+1}"] = out
+                    output[f"embedding_layer_{i + 1}"] = out
             if i + 1 == self.depth:
                 output["embedding"] = self.embedding(out)
 
@@ -101,7 +105,7 @@ class Encoder_VAE_MLP(BaseEncoder):
 
             if output_layer_levels is not None:
                 if i + 1 in output_layer_levels:
-                    output[f"embedding_layer_{i+1}"] = out
+                    output[f"embedding_layer_{i + 1}"] = out
             if i + 1 == self.depth:
                 output["embedding"] = self.embedding(out)
                 output["log_covariance"] = self.log_var(out)
@@ -152,7 +156,7 @@ class Encoder_SVAE_MLP(BaseEncoder):
 
             if output_layer_levels is not None:
                 if i + 1 in output_layer_levels:
-                    output[f"embedding_layer_{i+1}"] = out
+                    output[f"embedding_layer_{i + 1}"] = out
             if i + 1 == self.depth:
                 output["embedding"] = self.embedding(out)
                 output["log_concentration"] = self.log_concentration(out)
@@ -205,7 +209,7 @@ class Decoder_AE_MLP(BaseDecoder):
 
             if output_layer_levels is not None:
                 if i + 1 in output_layer_levels:
-                    output[f"reconstruction_layer_{i+1}"] = out
+                    output[f"reconstruction_layer_{i + 1}"] = out
             if i + 1 == self.depth:
                 output["reconstruction"] = out.reshape((z.shape[0],) + self.input_dim)
 
@@ -233,7 +237,6 @@ class Metric_MLP(BaseMetric):
         self.lower = nn.Linear(400, k)
 
     def forward(self, x):
-
         h1 = self.layers(x.reshape(-1, np.prod(self.input_dim)))
         h21, h22 = self.diag(h1), self.lower(h1)
 
@@ -305,7 +308,7 @@ class Discriminator_MLP(BaseDiscriminator):
 
             if output_layer_levels is not None:
                 if i + 1 in output_layer_levels:
-                    output[f"embedding_layer_{i+1}"] = out
+                    output[f"embedding_layer_{i + 1}"] = out
 
             if i + 1 == self.depth:
                 output["embedding"] = out
